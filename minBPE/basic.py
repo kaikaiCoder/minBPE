@@ -21,7 +21,6 @@ class BasicTokenizer(Tokenizer):
             self.vocab[new_id] = self.vocab[pair[0]] + self.vocab[pair[1]]
             if verbose:
                 print(f"Merge {i+1}/{n_merge} {pair} -> {new_id}")
-                
 
     def encode(self, text):
         ids = list(text.encode("utf-8"))
