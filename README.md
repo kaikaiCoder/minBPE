@@ -8,7 +8,16 @@ minBPE 是一个最小化的 Byte Pair Encoding (BPE) 实现，支持基本的 B
 - 支持正则表达式 BPE
 - 实现了 GPT-4 的 Tokenizer
 
+## 安装
+
+```bash
+git clone https://github.com/kaikaiCoder/minBPE
+cd minBPE
+python setup.py install
+```
+
 ## 使用方法
+
 ```python
 from minBPE import BasicTokenizer, RegexTokenizer, GPT4Tokenizer
 
