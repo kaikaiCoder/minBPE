@@ -1,8 +1,16 @@
 import pytest
-from minBPE import BasicTokenizer, RegexTokenizer
+from minBPE import BasicTokenizer, RegexTokenizer, GPT4Tokenizer
 
 
-@pytest.mark.parametrize("Tokenizer", [BasicTokenizer, RegexTokenizer])
+specials_string = """
+<|endoftext|>Hello world this is one document
+<|endoftext|>And this is another document
+<|endoftext|><|fim_prefix|>And this one has<|fim_suffix|> tokens.<|fim_middle|> FIM
+<|endoftext|>Last document!!! 👋<|endofprompt|>
+""".strip()
+
+
+@pytest.mark.parametrize("Tokenizer", [BasicTokenizer, RegexTokenizer, GPT4Tokenizer])
 @pytest.mark.parametrize("text", ["hello", "world", "hello world"])
 def test_encode_decode_identity(Tokenizer, text):
     tokenizer = Tokenizer()
@@ -33,14 +41,13 @@ def test_train_tokenizer(Tokenizer):
     """
     tokenizer = Tokenizer()
     text = "aaabdaaabac"
-    tokenizer.train(text, 256 + 3, verbose=True)
-    print(tokenizer.vocab)
+    tokenizer.train(text, 256 + 3, verbose=False)
     ids = tokenizer.encode(text)
     assert ids == [258, 100, 258, 97, 99]
     assert tokenizer.decode(ids) == text
 
 
-@pytest.mark.parametrize("Tokenizer", [RegexTokenizer])
+@pytest.mark.parametrize("Tokenizer", [RegexTokenizer, RegexTokenizer])
 def test_specical_token(Tokenizer):
     special_tokens = {
         "<|endoftext|>": 100257,
@@ -58,6 +65,17 @@ def test_specical_token(Tokenizer):
     tokenizer = Tokenizer()
     tokenizer.register_special_tokens(special_tokens)
     assert tokenizer.decode(tokenizer.encode(llama_text, "all")) == llama_text
+
+
+def test_gpt4_tokenizer():
+    import tiktoken
+
+    enc = tiktoken.get_encoding("cl100k_base")
+    tokenizer = GPT4Tokenizer()
+    tiktoken_encode_ids = enc.encode(specials_string, allowed_special="all")
+    tokenizer_encode_ids = tokenizer.encode(specials_string, allowed_special="all")
+    assert tiktoken_encode_ids == tokenizer_encode_ids
+    assert tokenizer.decode(tokenizer_encode_ids) == enc.decode(tiktoken_encode_ids)
 
 
 if __name__ == "__main__":
